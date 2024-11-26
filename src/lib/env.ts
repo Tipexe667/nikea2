@@ -6,6 +6,7 @@ const envSchema = zod.object({
   GOOGLE_CLIENT_SECRET: zod.string(),
   NEXTAUTH_SECRET: zod.string(),
   NEXTAUTH_URL: zod.string(),
+  SECRET: zod.string(),
 });
 
 const env = envSchema.parse({
@@ -14,6 +15,7 @@ const env = envSchema.parse({
   GOOGLE_CLIENT_SECRET: "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",
   NEXTAUTH_SECRET: "fU2/V+vI4x2x26nZPgoShxvurIpN7PMFo3hNZkkdHCmBB3OckMs33AwoNX4=",
   NEXTAUTH_URL: "http://localhost:3000",
+  SECRET: "f96fb07bc66341ade0f6ff437b14163f",
 });
 
 export default env;

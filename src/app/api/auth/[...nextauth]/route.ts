@@ -1,48 +1,37 @@
+// Import required modules
 import { mergeAnonymousCartIntoUserCart } from "@/lib/db/cart";
 import { prisma } from "@/lib/db/prisma";
-import env from "@/lib/env"; // Assuming env is correctly exporting environment variables
+import env from "@/lib/env"; // Assuming env is a module exporting environment variables
 import { PrismaAdapter } from "@auth/prisma-adapter";
 import { PrismaClient } from "@prisma/client";
 import { NextAuthOptions } from "next-auth";
 import NextAuth from "next-auth";
 import GoogleProvider from "next-auth/providers/google";
 
-// Validate required environment variables
-if (!env.NEXTAUTH_SECRET) {
-  throw new Error("Missing NEXTAUTH_SECRET environment variable.");
-}
-if (!env.GOOGLE_CLIENT_ID || !env.GOOGLE_CLIENT_SECRET) {
-  throw new Error("Missing Google OAuth credentials (GOOGLE_CLIENT_ID or GOOGLE_CLIENT_SECRET).");
-}
+// Initialize Prisma Client
+const prismaClient = new PrismaClient();
 
 // Define NextAuth options
 export const authOptions: NextAuthOptions = {
-  adapter: PrismaAdapter(prisma as PrismaClient),
+  adapter: PrismaAdapter(prismaClient), // Use PrismaAdapter for NextAuth
   providers: [
     GoogleProvider({
-      clientId: env.GOOGLE_CLIENT_ID,
+      clientId: env.GOOGLE_CLIENT_ID, // Use environment variables
       clientSecret: env.GOOGLE_CLIENT_SECRET,
     }),
   ],
   callbacks: {
-    async session({ session, user }) {
-      // Attach the user ID to the session object
-      if (session?.user) {
-        session.user.id = user.id;
-      }
+    session({ session, user }) {
+      session.user.id = user.id; // Ensure user id is attached to the session
       return session;
     },
   },
   events: {
     async signIn({ user }) {
-      try {
-        await mergeAnonymousCartIntoUserCart(user.id); // Merge cart on sign-in
-      } catch (error) {
-        console.error("Error merging anonymous cart:", error);
-      }
+      await mergeAnonymousCartIntoUserCart(user.id); // Merge cart on sign-in
     },
   },
-  secret: env.NEXTAUTH_SECRET, // Ensure the secret is used in production
+  secret: env.NEXTAUTH_SECRET, // Ensure you have a secret for NextAuth
 };
 
 // Export the handler for API routes
